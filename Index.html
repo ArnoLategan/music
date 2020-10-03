@@ -1,0 +1,351 @@
+<?php 
+
+ ?>
+
+ <!DOCTYPE html>
+ <html>
+ <head>
+ 	<style>
+<?php include 'css/demo.css'; ?>
+<?php include 'css/style2.css'; ?>
+
+
+ html {
+    overflow-y: hidden;
+  }
+
+  .img1{
+  	height: 230px;
+  	width:250px;
+
+  	  display: inline-block;
+  margin-left: auto;
+  margin-right: auto;
+
+  }
+
+.vz-wrapper {
+  position: relative;
+  height: 300px;
+  width: 100%;
+  
+
+  background: -webkit-gradient(radial, center center, 0, center center, 460, from(#396362), to(#000000));
+  background: -webkit-radial-gradient(circle, #396362, #000000);
+  background: -moz-radial-gradient(circle, #396362, #000000);
+  background: -ms-radial-gradient(circle, #396362, #000000);
+  box-shadow: inset 0 0 160px 0 #000;
+  cursor: pointer;
+}
+
+.vz-wrapper.-canvas {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  height: initial;
+  width: initial;
+  background: transparent;
+  box-shadow: none;
+}
+
+@media screen and (min-width: 420px) {
+.vz-wrapper { box-shadow: inset 0 0 200px 60px #000; }
+}
+
+
+iframe{opacity: 20%;
+background-color: transparent;}
+
+a{color:white;
+font-size: 20px;}
+
+p{color:white;}
+
+
+	</style>	
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+<script src="visualizer.js"></script>
+<link rel='stylesheet' href='https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css'><link rel="stylesheet" href="./css/style2.css">
+
+<link rel='stylesheet' href='https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css'><link rel="stylesheet" href="./css/demo.css">
+ 	<title>
+ 		
+
+
+ 	</title>
+ </head>
+<h2></h2>
+
+ <body>
+		<ul class="cb-slideshow"> 
+            <li><span><img src="/bassick/images/16.jpg"></span><div><h3>Sou·n·ds</h3></div></li>
+            <li><span><img src="/bassick/images/11.jpg"></span><div><h3>En·er·gy</h3></div></li>
+            <li><span><img src="/bassick/images/12.jpg"></span><div><h3>Syn·chro·nize</h3></div></li>
+            <li><span><img src="/bassick/images/13.jpg"></span><div><h3>Qua·lity</h3></div></li>
+            <li><span><img src="/bassick/images/15.jpg"></span><div><h3>Com·po·sure</h3></div></li>
+            <li><span><img src="/bassick/images/14.jpg"></span><div><h3>Pa·ss·ion</h3></div></li>
+
+        </ul>
+    <div class="container">
+	
+ 	 
+ 	 <a href="home.php">
+ 	 <img src="images/LOGO1.png" class="img1"><br>
+ 	 <p>ENTER</p>
+ 	</a>
+
+ 	 <br>
+
+ 	  <!-- <audio class="audio" controls="controls">
+              <source src="upload/test.mp3" type="audio/mpeg">
+
+              Your browser does not support the audio element.
+              </audio> -->
+
+<!-- <iframe opacity="50%" width="100%" height="200" scrolling="yes" frameborder="yes" allow="autoplay"
+src="https://w.soundcloud.com/player/?url=https%3A//soundcloud.com/bassickbehaviour/bassick-behaviour-mix-tape-8
+&color=%23ff5500&auto_play=false&hide_related=false
+&show_comments=true&show_user=true&show_reposts=false&show_teaser=true&visual=true&show_likes=true">
+</iframe> -->
+
+ <div id="myaudio"></div>
+
+
+<section>
+  <div style="margin-top:50px;"><canvas id="playbutton" width="25" height="25"></canvas></div>
+  <div>
+    <canvas id="fft" class="fft" width="302" height="110" style="opacity: 50%;"></canvas>
+    <canvas style="color:black;" id="fft2" class="fft" width="312" height="5"></canvas>
+  </div>
+  
+</section>
+<script>
+(function() {
+CanvasRenderingContext2D.prototype.line = function(x1, y1, x2, y2) {
+  this.lineCap = 'round';
+  this.beginPath();
+  this.moveTo(x1, y1);
+  this.lineTo(x2, y2);
+  this.closePath();
+  this.stroke();
+}
+CanvasRenderingContext2D.prototype.circle = function(x, y, r, fill_opt) {
+  this.beginPath();
+  this.arc(x, y, r, 0, Math.PI * 2, true);
+  this.closePath();
+  if (fill_opt) {
+    this.fillStyle = 'rgba(0,0,0,1)';
+    this.fill();
+    this.stroke();
+  } else {
+    this.stroke();
+  }
+}
+CanvasRenderingContext2D.prototype.rectangle = function(x, y, w, h, fill_opt) {
+  this.beginPath();
+  this.rect(x, y, w, h);
+  this.closePath();
+  if (fill_opt) {
+    this.fillStyle = 'blue';
+    this.fill();
+  } else {
+    this.stroke();
+  }
+}
+CanvasRenderingContext2D.prototype.triangle = function(p1, p2, p3, fill_opt) {
+  // Stroked triangle.
+  this.beginPath();
+  this.moveTo(p1.x, p1.y);
+  this.lineTo(p2.x, p2.y);
+  this.lineTo(p3.x, p3.y);
+  this.closePath();
+  if (fill_opt) {
+    this.fillStyle = 'blue';
+    this.fill();
+  } else {
+    this.stroke();
+  }
+}
+CanvasRenderingContext2D.prototype.clear = function() {
+  this.clearRect(0, 0, this.canvas.clientWidth, this.canvas.clientHeight);
+}
+
+var canvas = document.getElementById('playbutton');
+var ctx = canvas.getContext('2d');
+ctx.lineWidth = 4;
+
+var R = canvas.width / 2;
+var STROKE_AND_FILL = false;
+
+canvas.addEventListener('mouseover', function(e) {
+  if (this.classList.contains('playing')) {
+    drawPauseButton(STROKE_AND_FILL);
+  } else {
+    drawPlayButton(STROKE_AND_FILL);
+  }
+  ctx.save();
+  ctx.lineWidth += 3;
+  ctx.circle(R, R, R - ctx.lineWidth + 1);
+  ctx.restore();
+}, true);
+
+canvas.addEventListener('mouseout', function(e) {
+  if (this.classList.contains('playing')) {
+    drawPauseButton(STROKE_AND_FILL);
+  } else {
+    drawPlayButton(STROKE_AND_FILL);
+  }
+}, true);
+
+canvas.addEventListener('click', function(e) {
+  this.classList.toggle('playing');
+  if (this.classList.contains('playing')) {
+    drawPauseButton(STROKE_AND_FILL);
+    audio.play();
+  } else {
+    drawPlayButton(STROKE_AND_FILL);
+    audio.pause();
+  }
+}, true);
+
+function drawPlayButton(opt_fill) {
+  ctx.clear();
+  ctx.circle(R, R, R - ctx.lineWidth + 1, opt_fill);
+  ctx.triangle({x: R*0.8, y: R*0.56}, {x: R*1.45, y: R}, {x: R*0.8, y: R*1.45}, true);
+}
+
+function drawPauseButton(opt_fill) {
+  ctx.clear();
+  ctx.circle(R, R, R - ctx.lineWidth + 1, opt_fill);
+  ctx.save();
+  ctx.lineWidth += 4;
+  ctx.line(R*0.8, R/2, R*0.8, R*1.5);
+  ctx.line(R+(R/5), R/2, R+(R/5), R*1.5);
+  ctx.restore();
+}
+drawPlayButton(STROKE_AND_FILL);
+
+window.playButton = canvas;
+})();
+
+(function() {
+var canvas = document.getElementById('fft');
+var ctx = canvas.getContext('2d');
+canvas.width = document.body.clientWidth / 1.4;
+
+var canvas2 = document.getElementById('fft2');
+var ctx2 = canvas2.getContext('2d');
+canvas2.width = canvas.width;
+
+const CANVAS_HEIGHT = canvas.height;
+const CANVAS_WIDTH = canvas.width;
+
+window.audio = new Audio();
+audio.src = 'upload/a.mp3';
+audio.controls = true;
+//audio.autoplay = true;
+audio.loop = true;
+
+var currenTimeNode = document.querySelector('#current-time');
+audio.addEventListener('timeupdate', function(e) {
+  var currTime = audio.currentTime;
+  currenTimeNode.textContent = parseInt(currTime / 60) + ':' + parseInt(currTime % 60);
+}, false);
+
+document.querySelector('#myaudio').appendChild(audio);
+
+// Check for non Web Audio API browsers.
+if (!window.AudioContext) {
+  alert("Web Audio isn't available in your browser. But...you can still play the HTML5 audio :)");
+  document.querySelector('#myaudio').classList.toggle('show');
+  document.querySelector('aside').style.marginTop = '7em';
+  return;
+}
+
+var context = new AudioContext();
+var analyser = context.createAnalyser();
+
+function rafCallback(time) {
+  window.requestAnimationFrame(rafCallback, canvas);
+
+  var freqByteData = new Uint8Array(analyser.frequencyBinCount);
+  analyser.getByteFrequencyData(freqByteData); //analyser.getByteTimeDomainData(freqByteData);
+
+  var SPACER_WIDTH = 7;
+  var BAR_WIDTH = 5;
+  var OFFSET = 1;
+  var CUTOFF = 3;
+  var numBars = Math.round(CANVAS_WIDTH / SPACER_WIDTH);
+
+  ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+  ctx.fillStyle = 'lime';
+  ctx.opacity=10;
+  ctx.lineCap = 'round';
+
+  ctx2.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+  ctx2.fillStyle = 'white';
+  ctx2.lineCap = 'round';
+
+  // Draw rectangle for each frequency bin.
+  /*for (var i = 0; i < numBars / 2 - CUTOFF; ++i) {
+    var magnitude = freqByteData[i + OFFSET];
+    ctx.fillRect(i * SPACER_WIDTH, CANVAS_HEIGHT, BAR_WIDTH, -magnitude);
+  }
+  for (var i = numBars / 2 + CUTOFF; i < numBars; ++i) {
+    var magnitude = freqByteData[i + OFFSET];
+    ctx2.fillRect(i * SPACER_WIDTH, CANVAS_HEIGHT, BAR_WIDTH, -magnitude);
+  }*/
+  for (var i = 0; i < numBars; ++i) {
+    var magnitude = freqByteData[i + OFFSET];
+    ctx.fillRect(i * SPACER_WIDTH, CANVAS_HEIGHT, BAR_WIDTH, -magnitude);
+    ctx2.fillRect(i * SPACER_WIDTH, CANVAS_HEIGHT, BAR_WIDTH, -magnitude);
+  }
+}
+
+function onLoad(e) {
+  var source = context.createMediaElementSource(audio);
+  source.connect(analyser);
+  analyser.connect(context.destination);
+
+  rafCallback();
+}
+
+// Need window.onload to fire first. See crbug.com/112368.
+window.addEventListener('load', onLoad, false);
+})();
+
+window.addEventListener('keydown', function(e) {
+  if (e.keyCode == 32) { // space
+    // Simulate link click on an element.
+    var evt = document.createEvent('Event');
+    evt.initEvent('click', false, false);
+    window.playButton.dispatchEvent(evt);
+  }
+}, false);
+</script>
+<script>
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-22014378-1']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+
+
+
+</script>
+
+</div>
+
+ </body>
+
+<script type="text/javascript">
+	
+
+</script>
+
+ </html>
